@@ -38,12 +38,14 @@ def upload_file():
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filepath = os.path.join(UPLOAD_FOLDER, file.filename)
-            if get_folder_size(UPLOAD_FOLDER) + len(file.read()) > 10 * 1024 * 1024 * 1024:
+            file_size = len(file.read())
+            if get_folder_size(UPLOAD_FOLDER) + file_size > 10 * 1024 * 1024 * 1024:
                 flash('חרגת מהמגבלת 10GB')
             else:
                 file.seek(0)
                 file.save(filepath)
                 flash('הקובץ הועלה בהצלחה')
+
     files = os.listdir(UPLOAD_FOLDER)
     return render_template('upload.html', files=files)
 
@@ -53,14 +55,24 @@ def download_file(filename):
 
 @app.route('/delete/<filename>')
 def delete_file(filename):
-    os.remove(os.path.join(UPLOAD_FOLDER, filename))
-    flash('הקובץ נמחק')
+    try:
+        os.remove(os.path.join(UPLOAD_FOLDER, filename))
+        flash('הקובץ נמחק')
+    except:
+        flash('שגיאה במחיקת הקובץ')
     return redirect(url_for('upload_file'))
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
+@app.route('/list')
+def list_files():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    files = os.listdir(UPLOAD_FOLDER)
+    return render_template('files.html', files=files)
 
 def get_folder_size(path='.'):
     total = 0
@@ -72,10 +84,5 @@ def get_folder_size(path='.'):
 if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
-
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-@app.route('/list')
-def list_files():
-    files = os.listdir(UPLOAD_FOLDER)
-    return render_template('files.html', files=files)
