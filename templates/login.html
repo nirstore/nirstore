@@ -1,18 +1,85 @@
-
 <!doctype html>
 <html lang="he">
-<head><meta charset="UTF-8"><title>כניסה</title></head>
+<head>
+  <meta charset="UTF-8">
+  <title>כניסה</title>
+  <style>
+    body {
+      background-color: #eef2f3;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px;
+      margin: 10px 0;
+      font-size: 18px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      font-size: 18px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    img {
+      width: 100px;
+      margin-bottom: 20px;
+    }
+
+    ul {
+      color: red;
+      list-style-type: none;
+      padding: 0;
+    }
+  </style>
+</head>
 <body>
-  <h2>כניסה</h2>
-  <form method="post">
-    <input name="username" placeholder="שם משתמש"><br>
-    <input type="password" name="password" placeholder="סיסמה"><br>
-    <button type="submit">התחבר</button>
-  </form>
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <ul>{% for msg in messages %}<li>{{ msg }}</li>{% endfor %}</ul>
-    {% endif %}
-  {% endwith %}
+  <div class="container">
+    <img src="https://cdn-icons-png.flaticon.com/512/724/724715.png" alt="Upload Icon">
+    <h2>התחברות</h2>
+    <form method="post">
+      <input name="username" placeholder="שם משתמש" required>
+      <input type="password" name="password" placeholder="סיסמה" required>
+      <button type="submit">התחבר</button>
+    </form>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>
+          {% for msg in messages %}
+            <li>{{ msg }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+  </div>
 </body>
 </html>
