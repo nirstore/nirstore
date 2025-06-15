@@ -1,0 +1,26 @@
+
+<!doctype html>
+<html lang="he">
+<head><meta charset="UTF-8"><title>ניהול קבצים</title></head>
+<body>
+  <h2>קבצים</h2>
+  <form method="post" enctype="multipart/form-data">
+    <input type="file" name="file">
+    <button type="submit">העלה</button>
+  </form>
+  <ul>
+    {% for file in files %}
+      <li>{{ file }} —
+        <a href="/download/{{ file }}">הורדה</a> —
+        <a href="/delete/{{ file }}">מחק</a>
+      </li>
+    {% endfor %}
+  </ul>
+  <a href="/logout">התנתק</a>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul>{% for msg in messages %}<li>{{ msg }}</li>{% endfor %}</ul>
+    {% endif %}
+  {% endwith %}
+</body>
+</html>

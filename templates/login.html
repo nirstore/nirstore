@@ -1,0 +1,18 @@
+
+<!doctype html>
+<html lang="he">
+<head><meta charset="UTF-8"><title>כניסה</title></head>
+<body>
+  <h2>כניסה</h2>
+  <form method="post">
+    <input name="username" placeholder="שם משתמש"><br>
+    <input type="password" name="password" placeholder="סיסמה"><br>
+    <button type="submit">התחבר</button>
+  </form>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul>{% for msg in messages %}<li>{{ msg }}</li>{% endfor %}</ul>
+    {% endif %}
+  {% endwith %}
+</body>
+</html>
