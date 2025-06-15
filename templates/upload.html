@@ -1,123 +1,101 @@
 <!doctype html>
-<html lang="he">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <title>ניהול קבצים</title>
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #dfefff, #ffffff);
+      font-family: Arial, sans-serif;
+      background: #eef6fc;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      direction: rtl;
+      height: 100vh;
+      margin: 0;
     }
-
     .container {
-      background-color: white;
+      background: white;
       padding: 30px;
       border-radius: 12px;
-      box-shadow: 0 0 18px rgba(0, 0, 0, 0.1);
-      width: 90%;
-      max-width: 600px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
       text-align: center;
+      width: 90%;
+      max-width: 400px;
     }
-
     h2 {
       margin-bottom: 20px;
       color: #333;
     }
-
     input[type="file"] {
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 8px;
-      margin-bottom: 15px;
+      margin: 10px 0;
     }
-
     button {
-      padding: 12px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      background-color: #4CAF50;
+      background-color: #28a745;
       color: white;
+      border: none;
+      padding: 10px 25px;
+      margin-top: 10px;
+      font-size: 16px;
+      border-radius: 6px;
       cursor: pointer;
     }
-
     button:hover {
-      background-color: #45a049;
+      background-color: #218838;
     }
-
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    li {
-      background: #f9f9f9;
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 8px;
-    }
-
-    a {
-      margin: 0 10px;
-      text-decoration: none;
-      color: #007BFF;
-      font-weight: bold;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
-    .logout {
-      display: inline-block;
-      margin-top: 20px;
-      color: #c62828;
-      font-weight: bold;
-    }
-
-    .messages {
-      color: green;
+    .secondary-btn {
+      background-color: #007bff;
       margin-top: 15px;
+    }
+    .secondary-btn:hover {
+      background-color: #0069d9;
+    }
+    .logout {
+      margin-top: 20px;
+      display: inline-block;
+      color: #dc3545;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    ul {
+      text-align: right;
+      padding-right: 0;
+      list-style: none;
+    }
+    li {
+      margin: 8px 0;
+    }
+    .message {
+      color: #dc3545;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>קבצים</h2>
-
-    <form method="post" enctype="multipart/form-data">
-      <input type="file" name="file" required><br>
-      <button type="submit">העלה</button>
-    </form>
+    <h2>📁 קבצים</h2>
 
     {% with messages = get_flashed_messages() %}
       {% if messages %}
-        <div class="messages">
+        <div class="message">
           {% for msg in messages %}
-            <div>{{ msg }}</div>
+            <p>{{ msg }}</p>
           {% endfor %}
         </div>
       {% endif %}
     {% endwith %}
 
-    <ul>
-      {% for file in files %}
-        <li>
-          {{ file }}
-          <a href="/download/{{ file }}">📥 הורד</a>
-          <a href="/delete/{{ file }}" style="color:red">🗑️ מחק</a>
-        </li>
-      {% endfor %}
-    </ul>
+    <form method="post" enctype="multipart/form-data">
+      <input type="file" name="file">
+      <br>
+      <button type="submit">העלה</button>
+    </form>
 
-    <a class="logout" href="/logout">🚪 התנתק</a>
+    <a href="{{ url_for('list_files') }}">
+      <button class="secondary-btn">📂 סייר הקבצים</button>
+    </a>
+
+    <br>
+    <a href="{{ url_for('logout') }}" class="logout">🚪 התנתק</a>
   </div>
 </body>
 </html>
