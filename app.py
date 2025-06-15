@@ -75,3 +75,7 @@ if __name__ == '__main__':
 
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+@app.route('/list')
+def list_files():
+    files = os.listdir(UPLOAD_FOLDER)
+    return render_template('files.html', files=files)
