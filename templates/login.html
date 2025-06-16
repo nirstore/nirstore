@@ -2,81 +2,67 @@
 <html lang="he">
 <head>
   <meta charset="UTF-8">
-  <title>כניסה</title>
+  <title>התחברות</title>
   <style>
     body {
-      background-color: #eef2f3;
-      font-family: Arial, sans-serif;
+      font-family: sans-serif;
+      background: #f4f7f8;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       height: 100vh;
-      margin: 0;
+      direction: rtl;
     }
-
-    .container {
-      background-color: #ffffff;
-      padding: 30px;
+    .login-box {
+      background: white;
+      padding: 2em;
       border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       text-align: center;
-      max-width: 400px;
-      width: 90%;
     }
-
     input {
+      padding: 10px;
+      margin: 8px 0;
       width: 100%;
-      padding: 15px;
-      margin: 10px 0;
-      font-size: 18px;
       border: 1px solid #ccc;
-      border-radius: 8px;
+      border-radius: 6px;
     }
-
     button {
-      width: 100%;
-      padding: 15px;
-      font-size: 18px;
-      background-color: #4CAF50;
+      background: #4CAF50;
       color: white;
+      padding: 10px;
+      width: 100%;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
     }
-
-    button:hover {
-      background-color: #45a049;
-    }
-
-    img {
-      width: 100px;
-      margin-bottom: 20px;
-    }
-
-    ul {
-      color: red;
-      list-style-type: none;
-      padding: 0;
+    a {
+      color: #007BFF;
+      font-size: 0.9em;
+      display: block;
+      margin-top: 10px;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <img src="https://cdn-icons-png.flaticon.com/512/724/724715.png" alt="Upload Icon">
+  <div class="login-box">
+    <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" width="64">
     <h2>התחברות</h2>
     <form method="post">
-      <input name="username" placeholder="שם משתמש" required>
-      <input type="password" name="password" placeholder="סיסמה" required>
+      <input name="username" placeholder="שם משתמש" required><br>
+      <input type="password" name="password" placeholder="סיסמה" required><br>
       <button type="submit">התחבר</button>
     </form>
+
+    <a href="/forgot-password">שכחת סיסמה?</a>
 
     {% with messages = get_flashed_messages() %}
       {% if messages %}
         <ul>
-          {% for msg in messages %}
-            <li>{{ msg }}</li>
-          {% endfor %}
+        {% for msg in messages %}
+          <li>{{ msg }}</li>
+        {% endfor %}
         </ul>
       {% endif %}
     {% endwith %}
