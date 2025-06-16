@@ -1,88 +1,117 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
+from flask import Flask, request, redirect, url_for, render_template, send_from_directory, session, flash
 import os
+from werkzeug.utils import secure_filename
+import smtplib
+from email.mime.text import MIMEText
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'
+app.secret_key = 'your_secret_key_here'
 
+# הגדרות
 UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'docx', 'xlsx'}
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'zip', 'rar'}
+USERNAME = 'com@nir.org.il'
+PASSWORD = 'Comadmin-1,'
+MAX_STORAGE_BYTES = 10 * 1024 * 1024 * 1024  # 10GB
 
-USERNAME = "com@nir.org.il"
-PASSWORD = "Comadmin-1"
+# פרטי המייל
+EMAIL_SENDER = 'nirstore.sender@gmail.com'
+EMAIL_PASSWORD = 'rkhu nvoy jyss popp'
+EMAIL_RECEIVER = 'com@nir.org.il'
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def get_total_storage():
+    total = 0
+    for f in os.listdir(UPLOAD_FOLDER):
+        total += os.path.getsize(os.path.join(UPLOAD_FOLDER, f))
+    return total
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         if request.form['username'] == USERNAME and request.form['password'] == PASSWORD:
-            session['user'] = USERNAME
+            session['logged_in'] = True
             return redirect(url_for('upload_file'))
         else:
-            flash('שם משתמש או סיסמה לא נכונים')
+            flash('שם משתמש או סיסמה שגויים')
     return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    return redirect(url_for('login'))
 
 @app.route('/files', methods=['GET', 'POST'])
 def upload_file():
-    if 'user' not in session:
+    if not session.get('logged_in'):
         return redirect(url_for('login'))
 
     if request.method == 'POST':
         if 'file' not in request.files:
             flash('לא נבחר קובץ')
             return redirect(request.url)
+
         file = request.files['file']
         if file.filename == '':
             flash('לא נבחר קובץ')
             return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filepath = os.path.join(UPLOAD_FOLDER, file.filename)
-            file_size = len(file.read())
-            if get_folder_size(UPLOAD_FOLDER) + file_size > 10 * 1024 * 1024 * 1024:
-                flash('חרגת מהמגבלת 10GB')
-            else:
-                file.seek(0)
-                file.save(filepath)
-                flash('הקובץ הועלה בהצלחה')
 
-    files = os.listdir(UPLOAD_FOLDER)
+        if file and allowed_file(file.filename):
+            if get_total_storage() + len(file.read()) > MAX_STORAGE_BYTES:
+                flash('חרגת ממגבלת 10GB')
+                return redirect(request.url)
+            file.seek(0)
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            flash('הקובץ הועלה בהצלחה')
+            return redirect(url_for('upload_file'))
+
+    files = os.listdir(app.config['UPLOAD_FOLDER'])
     return render_template('upload.html', files=files)
 
 @app.route('/download/<filename>')
 def download_file(filename):
-    return send_from_directory(UPLOAD_FOLDER, filename, as_attachment=True)
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
 
 @app.route('/delete/<filename>')
 def delete_file(filename):
-    try:
-        os.remove(os.path.join(UPLOAD_FOLDER, filename))
-        flash('הקובץ נמחק')
-    except:
-        flash('שגיאה במחיקת הקובץ')
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    flash('הקובץ נמחק')
     return redirect(url_for('upload_file'))
 
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('login'))
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form['email']
+        temp_password = 'Comadmin-1,'  # שלח את הסיסמה הנוכחית או סיסמה זמנית
+        try:
+            send_reset_email(email, temp_password)
+            flash('הסיסמה נשלחה למייל שלך')
+        except Exception as e:
+            flash('שליחת המייל נכשלה: ' + str(e))
+        return redirect('/forgot-password')
+    return render_template('forgot_password.html')
 
-@app.route('/list')
-def list_files():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    files = os.listdir(UPLOAD_FOLDER)
-    return render_template('files.html', files=files)
+def send_reset_email(to_email, temp_password):
+    msg = MIMEText(f'הסיסמה שלך היא: {temp_password}')
+    msg['Subject'] = 'איפוס סיסמה - Nirstore'
+    msg['From'] = EMAIL_SENDER
+    msg['To'] = to_email
 
-def get_folder_size(path='.'):
-    total = 0
-    for entry in os.scandir(path):
-        if entry.is_file():
-            total += entry.stat().st_size
-    return total
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+        server.login(EMAIL_SENDER, EMAIL_PASSWORD)
+        server.send_message(msg)
 
 if __name__ == '__main__':
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=True)
