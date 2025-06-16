@@ -1,20 +1,20 @@
 from flask import Flask, request, redirect, url_for, render_template, send_from_directory, session, flash
 import os
-from werkzeug.utils import secure_filename
 import smtplib
 from email.mime.text import MIMEText
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
 
-# הגדרות
+# הגדרות בסיסיות
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'zip', 'rar'}
 USERNAME = 'com@nir.org.il'
 PASSWORD = 'Comadmin-1,'
 MAX_STORAGE_BYTES = 10 * 1024 * 1024 * 1024  # 10GB
 
-# פרטי המייל
+# הגדרות מייל לשחזור סיסמה
 EMAIL_SENDER = 'nirstore.sender@gmail.com'
 EMAIL_PASSWORD = 'rkhu nvoy jyss popp'
 EMAIL_RECEIVER = 'com@nir.org.il'
@@ -94,7 +94,7 @@ def delete_file(filename):
 def forgot_password():
     if request.method == 'POST':
         email = request.form['email']
-        temp_password = 'Comadmin-1,'  # שלח את הסיסמה הנוכחית או סיסמה זמנית
+        temp_password = PASSWORD  # או תיצור סיסמה זמנית אקראית
         try:
             send_reset_email(email, temp_password)
             flash('הסיסמה נשלחה למייל שלך')
@@ -113,8 +113,7 @@ def send_reset_email(to_email, temp_password):
         server.login(EMAIL_SENDER, EMAIL_PASSWORD)
         server.send_message(msg)
 
+# החלק החשוב לתמיכה ב-Render
 if __name__ == '__main__':
-  import os
-port = int(os.environ.get("PORT", 5000))
-app.run(host='0.0.0.0', port=port)
-  
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
