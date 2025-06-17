@@ -1,12 +1,13 @@
-
-from flask import Flask, request, redirect, url_for, render_template, send_from_directory, flash
+from flask import Flask, request, redirect, url_for, render_template, send_from_directory, session, flash
 import os
 from werkzeug.utils import secure_filename
+import smtplib
+from email.mime.text import MIMEText
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
 app = Flask(__name__)
-app.secret_key = 'no_password_dev_mode'
+app.secret_key = 'your_secret_key_here'
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'zip', 'rar'}
@@ -17,17 +18,14 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# התחברות ל-Google Drive דרך PyDrive
 gauth = GoogleAuth()
 gauth.LoadCredentialsFile("mycreds.txt")
-
 if gauth.credentials is None:
     gauth.LocalWebserverAuth()
 elif gauth.access_token_expired:
     gauth.Refresh()
 else:
     gauth.Authorize()
-
 gauth.SaveCredentialsFile("mycreds.txt")
 drive = GoogleDrive(gauth)
 
@@ -53,32 +51,21 @@ def upload_file():
             return redirect(request.url)
 
         if file and allowed_file(file.filename):
-            if get_total_storage() + len(file.read()) > MAX_STORAGE_BYTES:
-                flash('חרגת ממגבלת 10GB')
-                return redirect(request.url)
             file.seek(0)
             filename = secure_filename(file.filename)
-            local_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(local_path)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-            gfile = drive.CreateFile({'title': filename})
-            gfile.SetContentFile(local_path)
-            gfile.Upload()
+            f = drive.CreateFile({'title': filename})
+            f.SetContentFile(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            f.Upload()
 
-            flash('הקובץ הועלה ל-Drive')
+            flash('הקובץ הועלה ל־Google Drive')
             return redirect(url_for('upload_file'))
 
-    files = os.listdir(app.config['UPLOAD_FOLDER'])
-    return render_template('upload.html', files=files)
+    return render_template('upload.html')
 
-@app.route('/download/<filename>')
-def download_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
-
-@app.route('/delete/<filename>')
-def delete_file(filename):
-    os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    flash('הקובץ נמחק')
+@app.route('/logout')
+def logout():
     return redirect(url_for('upload_file'))
 
 if __name__ == '__main__':
