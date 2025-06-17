@@ -8,7 +8,7 @@ app = Flask(__name__)
 app.secret_key = 'secret'
 
 UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'zip', 'rar'}
+ALLOWED_EXTENSIONS = None  # מאפשר העלאת כל סוגי הקבצים
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -30,6 +30,8 @@ drive = GoogleDrive(gauth)
 STORE_FOLDER_ID = '1NfAOvPFJCssjB7iNwkBMgOjCEJUsZ3aa'
 
 def allowed_file(filename):
+    if ALLOWED_EXTENSIONS is None:
+        return True
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/', methods=['GET', 'POST'])
